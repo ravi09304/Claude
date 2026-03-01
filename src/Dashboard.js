@@ -17,6 +17,8 @@ function Dashboard({ user, onLogout }) {
         <h1 className="dashboard-title">Welcome, {user?.name}!</h1>
         <p className="dashboard-subtitle">You have successfully signed in.</p>
         <p className="dashboard-email">{user?.email}</p>
+        <p className="dashboard-email">Phone: {user?.phoneNumber}</p>
+        <p className="dashboard-email">GSTIN: {user?.gstin}</p>
         <button className="logout-btn" onClick={onLogout}>
           Sign out
         </button>
