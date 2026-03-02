@@ -3,6 +3,7 @@
 A React application with:
 - Login page
 - Customer details form (Phone + GSTIN)
+- GST certificate document upload
 - OTP verification step
 - Dashboard after successful verification
 
@@ -23,6 +24,7 @@ Claude/
     ├── LoginPage.js
     ├── LoginPage.css
     ├── CustomerDetailsPage.js
+    ├── GstCertificateUploadPage.js
     ├── OtpVerificationPage.js
     ├── OnboardingFlow.css
     ├── Dashboard.js
@@ -56,6 +58,12 @@ The app will be available at `http://localhost:3000/Claude`
 npm run build
 ```
 
+## User Flow
+
+```
+Login → Customer Details → GST Certificate Upload → OTP Verification → Dashboard
+```
+
 ## Features
 
 - Login page with form validation
@@ -64,6 +72,10 @@ npm run build
 - Customer details form after login
   - Validates Indian mobile number (10 digits, starts with 6-9)
   - Validates GSTIN format
+- GST certificate upload page
+  - Click-to-browse or drag-and-drop file upload
+  - Accepts PDF, JPG, PNG files up to 5 MB
+  - File type and size validation
 - OTP verification page
   - Simulated OTP generation in frontend
   - Resend OTP with cooldown timer
