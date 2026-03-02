@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import LoginPage from './LoginPage';
 import Dashboard from './Dashboard';
 import CustomerDetailsPage from './CustomerDetailsPage';
+import GstCertificateUploadPage from './GstCertificateUploadPage';
 import OtpVerificationPage from './OtpVerificationPage';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [customerData, setCustomerData] = useState(null);
+  const [gstCertificate, setGstCertificate] = useState(null);
   const [activeOtp, setActiveOtp] = useState('');
   const [isOtpVerified, setIsOtpVerified] = useState(false);
 
@@ -20,8 +22,13 @@ function App() {
 
   const handleRequestOtp = ({ phoneNumber, gstin }) => {
     setCustomerData({ phoneNumber, gstin });
-    setActiveOtp(generateOtp());
+    setGstCertificate(null);
     setIsOtpVerified(false);
+  };
+
+  const handleGstUpload = (file) => {
+    setGstCertificate(file);
+    setActiveOtp(generateOtp());
   };
 
   const handleVerifyOtp = (otp) => {
@@ -36,6 +43,7 @@ function App() {
 
   const handleEditCustomerData = () => {
     setCustomerData(null);
+    setGstCertificate(null);
     setActiveOtp('');
   };
 
@@ -43,6 +51,7 @@ function App() {
     setUser(null);
     setIsLoggedIn(false);
     setCustomerData(null);
+    setGstCertificate(null);
     setActiveOtp('');
     setIsOtpVerified(false);
   };
@@ -55,11 +64,16 @@ function App() {
         <LoginPage onLogin={handleLogin} />
       ) : !hasSubmittedCustomerData ? (
         <CustomerDetailsPage onRequestOtp={handleRequestOtp} />
+      ) : !gstCertificate ? (
+        <GstCertificateUploadPage
+          onUpload={handleGstUpload}
+          onBack={handleEditCustomerData}
+        />
       ) : !isOtpVerified ? (
         <OtpVerificationPage
           phoneNumber={customerData.phoneNumber}
           demoOtp={activeOtp}
-          onBack={handleEditCustomerData}
+          onBack={() => setGstCertificate(null)}
           onResendOtp={handleResendOtp}
           onVerifyOtp={handleVerifyOtp}
         />

@@ -149,6 +149,113 @@
   cursor: not-allowed;
 }
 
+/* GST Certificate Upload */
+.upload-dropzone {
+  border: 2px dashed #c7d2fe;
+  border-radius: 10px;
+  background: #f5f7ff;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  outline: none;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone:focus {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+.upload-dropzone-active {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+.upload-dropzone-error {
+  border-color: #ef4444;
+  background: #fff5f5;
+}
+
+.upload-icon {
+  color: #6366f1;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-hint-primary {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.upload-hint-secondary {
+  font-size: 0.8125rem;
+  color: #9ca3af;
+}
+
+.upload-input-hidden {
+  display: none;
+}
+
+.upload-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 8px;
+  background: #eef2ff;
+  padding: 0.75rem 1rem;
+}
+
+.upload-file-icon {
+  color: #4f46e5;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.upload-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow: hidden;
+  flex: 1;
+}
+
+.upload-file-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upload-file-size {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.upload-remove-btn {
+  border: none;
+  background: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.upload-remove-btn:hover {
+  color: #ef4444;
+}
+
 @media (max-width: 480px) {
   .flow-card {
     padding: 1.5rem 1.2rem;
