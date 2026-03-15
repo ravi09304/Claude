@@ -166,7 +166,65 @@ ${summary}
 
   fs.writeFileSync(filename, content, "utf8");
   console.log(`[${now.toISOString()}] Summary saved to ${filename}`);
-  return filename;
+  return { filename, content };
+}
+
+async function sendTelegram(botToken, chatId, text) {
+  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(`Telegram API error: ${err.description}`);
+  }
+}
+
+async function sendTelegramDocument(botToken, chatId, filename, fileBuffer, caption) {
+  const url = `https://api.telegram.org/bot${botToken}/sendDocument`;
+  const form = new FormData();
+  form.append("chat_id", chatId);
+  form.append("caption", caption);
+  form.append("document", new Blob([fileBuffer], { type: "text/markdown" }), filename);
+
+  const res = await fetch(url, { method: "POST", body: form });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(`Telegram API error: ${err.description}`);
+  }
+}
+
+async function notifyTelegram(summary, tweets, dateStr) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!botToken || !chatId) {
+    console.log("Telegram credentials not set — skipping notification.");
+    return;
+  }
+
+  console.log(`[${new Date().toISOString()}] Sending summary to Telegram...`);
+
+  // Send a short header message
+  const date = new Date().toLocaleDateString("en-US", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  });
+  const header =
+    `📋 <b>Daily Twitter/X Summary</b>\n` +
+    `📅 ${date}\n` +
+    `🐦 ${tweets.length} tweets analyzed\n` +
+    `🔗 <a href="https://x.com/i/lists/${TWITTER_LIST_ID}">View List</a>`;
+
+  await sendTelegram(botToken, chatId, header);
+
+  // Send the full summary as a .md file attachment
+  const filename = `summary-${dateStr}.md`;
+  const fileBuffer = Buffer.from(summary, "utf8");
+  await sendTelegramDocument(botToken, chatId, filename, fileBuffer, "Full digest ⬆️");
+
+  console.log(`[${new Date().toISOString()}] Telegram notification sent.`);
 }
 
 async function runDailySummary() {
@@ -184,7 +242,10 @@ async function runDailySummary() {
     }
 
     const summary = await summarizeTweets(tweets);
-    const savedPath = saveSummary(summary, tweets);
+    const dateStr = new Date().toISOString().split("T")[0];
+    const { filename: savedPath } = saveSummary(summary, tweets);
+
+    await notifyTelegram(summary, tweets, dateStr);
 
     console.log(`\nDone! Summary saved to: ${savedPath}`);
   } catch (error) {

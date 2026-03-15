@@ -38,6 +38,8 @@ jobs:
         env:
           TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: node scheduler.js --once
 
       - name: Commit summary to repository
