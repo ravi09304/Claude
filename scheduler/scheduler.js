@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { TwitterApi } from "twitter-api-v2";
 import cron from "node-cron";
 import dotenv from "dotenv";
@@ -27,12 +27,12 @@ function getTwitterClient() {
   return new TwitterApi(bearerToken);
 }
 
-function getAnthropicClient() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+function getGeminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY is not set in environment variables");
+    throw new Error("GEMINI_API_KEY is not set in environment variables");
   }
-  return new Anthropic({ apiKey });
+  return new GoogleGenerativeAI(apiKey);
 }
 
 async function fetchListTweets(client) {
@@ -102,7 +102,15 @@ function formatTweetsForPrompt(tweets) {
 }
 
 async function summarizeTweets(tweets) {
-  const client = getAnthropicClient();
+  const genAI = getGeminiClient();
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: `You are an expert analyst who reads and summarizes social media content.
+Your task is to produce a clear, insightful daily digest from a curated Twitter/X list.
+Focus on the most important themes, trending topics, notable insights, and key discussions.
+Be concise but comprehensive. Use markdown formatting with headers and bullet points.`,
+  });
+
   const tweetContent = formatTweetsForPrompt(tweets);
   const date = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -111,20 +119,9 @@ async function summarizeTweets(tweets) {
     day: "numeric",
   });
 
-  console.log(`[${new Date().toISOString()}] Summarizing ${tweets.length} tweets with Claude...`);
+  console.log(`[${new Date().toISOString()}] Summarizing ${tweets.length} tweets with Gemini...`);
 
-  const stream = await client.messages.stream({
-    model: "claude-opus-4-6",
-    max_tokens: 4096,
-    thinking: { type: "adaptive" },
-    system: `You are an expert analyst who reads and summarizes social media content.
-Your task is to produce a clear, insightful daily digest from a curated Twitter/X list.
-Focus on the most important themes, trending topics, notable insights, and key discussions.
-Be concise but comprehensive. Use markdown formatting with headers and bullet points.`,
-    messages: [
-      {
-        role: "user",
-        content: `Please summarize the following tweets from the curated Twitter/X list for ${date}.
+  const prompt = `Please summarize the following tweets from the curated Twitter/X list for ${date}.
 
 The tweets below cover the last 24 hours:
 
@@ -135,20 +132,16 @@ Produce a structured daily digest with:
 2. **Key Insights** — The most important or thought-provoking points
 3. **Notable Tweets** — 2–3 standout tweets worth highlighting (quote the relevant part)
 4. **Trending Discussions** — Any debates or conversations gaining traction
-5. **Quick Stats** — Total tweets, most engaged post (likes + retweets), most active author`,
-      },
-    ],
-  });
+5. **Quick Stats** — Total tweets, most engaged post (likes + retweets), most active author`;
+
+  // Use streaming for responsive output
+  const result = await model.generateContentStream(prompt);
 
   let summary = "";
-  for await (const event of stream) {
-    if (
-      event.type === "content_block_delta" &&
-      event.delta.type === "text_delta"
-    ) {
-      process.stdout.write(event.delta.text);
-      summary += event.delta.text;
-    }
+  for await (const chunk of result.stream) {
+    const text = chunk.text();
+    process.stdout.write(text);
+    summary += text;
   }
 
   console.log("\n");
@@ -195,11 +188,7 @@ async function runDailySummary() {
 
     console.log(`\nDone! Summary saved to: ${savedPath}`);
   } catch (error) {
-    if (error instanceof Anthropic.APIError) {
-      console.error(`Claude API error (${error.status}):`, error.message);
-    } else {
-      console.error("Error running daily summary:", error.message);
-    }
+    console.error("Error running daily summary:", error.message);
     process.exitCode = 1;
   }
 }

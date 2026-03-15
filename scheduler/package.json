@@ -1,7 +1,7 @@
 {
   "name": "twitter-list-daily-summarizer",
   "version": "1.0.0",
-  "description": "Daily scheduler to fetch and summarize a Twitter/X list using Claude AI",
+  "description": "Daily scheduler to fetch and summarize a Twitter/X list using Gemini AI",
   "main": "scheduler.js",
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "run-once": "node scheduler.js --once"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.21.0",
     "node-cron": "^3.0.3",
     "twitter-api-v2": "^1.18.2",
     "dotenv": "^16.4.7"
