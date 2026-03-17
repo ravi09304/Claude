@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { TwitterApi } from "twitter-api-v2";
 import cron from "node-cron";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -19,14 +18,6 @@ if (!fs.existsSync(SUMMARIES_DIR)) {
   fs.mkdirSync(SUMMARIES_DIR, { recursive: true });
 }
 
-function getTwitterClient() {
-  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-  if (!bearerToken) {
-    throw new Error("TWITTER_BEARER_TOKEN is not set in environment variables");
-  }
-  return new TwitterApi(bearerToken);
-}
-
 function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -35,55 +26,9 @@ function getGeminiClient() {
   return new GoogleGenerativeAI(apiKey);
 }
 
-async function fetchListTweets(client) {
-  console.log(`[${new Date().toISOString()}] Fetching tweets from list ${TWITTER_LIST_ID}...`);
-
-  // Calculate start_time for the last 24 hours
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-  const tweets = [];
-  let nextToken;
-
-  do {
-    const response = await client.v2.listTweets(TWITTER_LIST_ID, {
-      max_results: 100,
-      start_time: since.toISOString(),
-      "tweet.fields": ["created_at", "author_id", "text", "public_metrics"],
-      "user.fields": ["name", "username"],
-      expansions: ["author_id"],
-      ...(nextToken ? { pagination_token: nextToken } : {}),
-    });
-
-    const data = response.data;
-    const users = response.includes?.users ?? [];
-
-    // Build a lookup for user info
-    const userMap = {};
-    for (const user of users) {
-      userMap[user.id] = user;
-    }
-
-    if (data?.data) {
-      for (const tweet of data.data) {
-        const author = userMap[tweet.author_id];
-        tweets.push({
-          id: tweet.id,
-          text: tweet.text,
-          createdAt: tweet.created_at,
-          authorName: author?.name ?? "Unknown",
-          authorUsername: author?.username ?? "unknown",
-          likes: tweet.public_metrics?.like_count ?? 0,
-          retweets: tweet.public_metrics?.retweet_count ?? 0,
-          replies: tweet.public_metrics?.reply_count ?? 0,
-        });
-      }
-    }
-
-    nextToken = data?.meta?.next_token;
-  } while (nextToken);
-
-  console.log(`[${new Date().toISOString()}] Fetched ${tweets.length} tweets.`);
-  return tweets;
+async function fetchListTweets() {
+  console.log(`[${new Date().toISOString()}] Twitter/X API removed — no tweets to fetch.`);
+  return [];
 }
 
 function formatTweetsForPrompt(tweets) {
@@ -233,8 +178,7 @@ async function runDailySummary() {
   console.log(`${"=".repeat(60)}\n`);
 
   try {
-    const twitterClient = getTwitterClient();
-    const tweets = await fetchListTweets(twitterClient);
+    const tweets = await fetchListTweets();
 
     if (tweets.length === 0) {
       console.log("No tweets found in the last 24 hours. Skipping summary.");
