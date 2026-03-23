@@ -1,6 +1,9 @@
 name: Daily Twitter/X List Summary
 
 on:
+  # schedule:
+  #   - cron: '0 8 * * *'  # Runs at 8:00 AM UTC daily — uncomment to re-enable
+
   # Allow manual trigger from the GitHub Actions UI
   workflow_dispatch:
 
