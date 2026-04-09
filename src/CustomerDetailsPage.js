@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import './OnboardingFlow.css';
+import './LoanFlow.css';
 
 const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
-function CustomerDetailsPage({ onRequestOtp }) {
+function CustomerDetailsPage({ onRequestOtp, onBack, purchaseAmount }) {
   const [formData, setFormData] = useState({
     phoneNumber: '',
     gstin: '',
@@ -72,9 +73,14 @@ function CustomerDetailsPage({ onRequestOtp }) {
   return (
     <div className="flow-container">
       <div className="flow-card">
+        {purchaseAmount && (
+          <div className="loan-context-banner">
+            💰 Loan application for <strong>₹{purchaseAmount.toLocaleString('en-IN')}</strong>
+          </div>
+        )}
         <div className="flow-header">
           <h1 className="flow-title">Customer Verification</h1>
-          <p className="flow-subtitle">Enter phone number and GSTIN to request OTP</p>
+          <p className="flow-subtitle">Enter customer phone number and store GSTIN to send OTP</p>
         </div>
 
         <form className="flow-form" onSubmit={handleSubmit} noValidate>
@@ -126,6 +132,14 @@ function CustomerDetailsPage({ onRequestOtp }) {
             {isSubmitting ? 'Requesting OTP...' : 'Send OTP'}
           </button>
         </form>
+
+        {onBack && (
+          <div className="flow-actions">
+            <button type="button" className="flow-link-btn" onClick={onBack}>
+              ← Back to Purchase Details
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
