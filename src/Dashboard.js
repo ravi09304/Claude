@@ -1,7 +1,7 @@
 import React from 'react';
 import './Dashboard.css';
 
-function Dashboard({ user, onLogout }) {
+function Dashboard({ user, onLogout, onOpenScanner }) {
   return (
     <div className="dashboard-container">
       <div className="dashboard-card">
@@ -19,9 +19,14 @@ function Dashboard({ user, onLogout }) {
         <p className="dashboard-email">{user?.email}</p>
         <p className="dashboard-email">Phone: {user?.phoneNumber}</p>
         <p className="dashboard-email">GSTIN: {user?.gstin}</p>
-        <button className="logout-btn" onClick={onLogout}>
-          Sign out
-        </button>
+        <div className="dashboard-actions">
+          <button className="scan-btn" onClick={onOpenScanner}>
+            Scan Document
+          </button>
+          <button className="logout-btn" onClick={onLogout}>
+            Sign out
+          </button>
+        </div>
       </div>
     </div>
   );
